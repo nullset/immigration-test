@@ -1,4 +1,5 @@
 import { html, render } from "lit-html";
+import { ifDefined } from "lit-html/directives/if-defined";
 import {
   observable,
   computed,
@@ -24,11 +25,13 @@ class Store {
   constructor(initState) {
     this.questions = initState.questions;
     this.pass = 0;
+    this.open = false;
   }
 
   markAsCorrect(item) {
     runInAction(() => {
       item.correct = item.correct + 1;
+      this.toggleOpen();
       this.nextPass();
     });
   }
@@ -37,6 +40,7 @@ class Store {
     runInAction(() => {
       item.incorrect = item.incorrect + 1;
       item.pass = item.pass + 1;
+      this.toggleOpen();
       this.nextPass();
     });
   }
@@ -45,6 +49,24 @@ class Store {
     if (this.toBeAnswered.length === 0 && this.incorrect.length > 0) {
       this.pass = this.pass + 1;
     }
+  }
+
+  toggleOpen() {
+    runInAction(() => {
+      this.open = !this.open;
+    });
+  }
+
+  reset() {
+    runInAction(() => {
+      this.questions.forEach(q => {
+        q.pass = 0;
+        q.correct = 0;
+        q.incorrect = 0;
+      });
+      debugger;
+      this.pass = 0;
+    });
   }
 
   get toBeAnswered() {
@@ -64,22 +86,34 @@ class Store {
   get incorrect() {
     return this.questions.filter(item => item.incorrect);
   }
+  get notIncorrect() {
+    return this.questions.filter(item => item.correct && !item.incorrect);
+  }
   get mostDifficultQuestions() {
     return this.questions.filter(item => {
       return item.incorrect && item.pass === this.pass - 1;
     });
+  }
+
+  get percentCorrect() {
+    return `${Math.floor(
+      (this.notIncorrect.length / this.questions.length) * 100
+    )}%`;
   }
 }
 
 decorate(Store, {
   questions: observable,
   pass: observable,
+  open: observable,
   // index: observable,
   toBeAnswered: computed,
   currentQuestion: computed,
   correct: computed,
   incorrect: computed,
-  mostDifficultQuestions: computed
+  notIncorrect: computed,
+  mostDifficultQuestions: computed,
+  percentCorrect: computed
 });
 
 const App = store => {
@@ -88,9 +122,7 @@ const App = store => {
   // const current = store.currentQuestion;
   // console.log(store.questions);
   // if (current) {
-  console.log(store.questions);
   if (store.toBeAnswered.length > 0) {
-    console.log("toBeAnswered", store.toBeAnswered);
     const idx = randomInRange(0, store.toBeAnswered.length);
     const current = store.toBeAnswered[idx];
     return html`
@@ -98,8 +130,15 @@ const App = store => {
       <p>incorrect: ${store.incorrect.length}</p>
       <p>index: ${current.id}</p>
       <p>pass: ${store.pass}</p>
-      <details open>
-        <summary>${current.question}</summary>
+      <p>open: ${store.open}</p>
+      <details ?open=${store.open}>
+        <summary
+          @click=${e => {
+            e.preventDefault();
+            store.toggleOpen();
+          }}
+          >${current.question}</summary
+        >
         <div>
           <ul>
             ${current.answers.map(answer => {
@@ -116,6 +155,19 @@ const App = store => {
           </button>
         </div>
       </details>
+      <footer>
+        <dl>
+          <dt>Correct:</dt>
+          <dd>
+            <progress
+              value=${store.correct.length}
+              max=${store.questions.length}
+              >${store.percentCorrect}
+            </progress>
+            ${store.percentCorrect}
+          </dd>
+        </dl>
+      </footer>
     `;
   } else {
     console.log(toJS(store));
@@ -125,6 +177,7 @@ const App = store => {
         <dl>
           <dt>Questions missed:</dt>
           <dd>${store.incorrect.length} of ${store.questions.length}</dd>
+          <dd>${store.percentCorrect} correct</dd>
           <dt>Questions most missed:</dt>
           ${store.mostDifficultQuestions.map(item => {
             return html`
@@ -141,6 +194,7 @@ const App = store => {
             `;
           })}
         </dl>
+        <button @click=${() => store.reset()}>Retake the test</button>
       </div>
     `;
   }
@@ -153,7 +207,7 @@ const App = store => {
 
 // states.map(state => render(App(state, actions), document.body));
 
-const store = new Store({ questions: kv });
+const store = (window.store = new Store({ questions: kv }));
 
 autorun(() => {
   render(App(store), document.getElementById("app"));

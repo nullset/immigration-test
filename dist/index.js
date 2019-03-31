@@ -1159,6 +1159,20 @@
 
   const html = (strings, ...values) => new TemplateResult(strings, values, 'html', defaultTemplateProcessor);
 
+  /**
+   * @license
+   * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+   * This code may only be used under the BSD style license found at
+   * http://polymer.github.io/LICENSE.txt
+   * The complete set of authors may be found at
+   * http://polymer.github.io/AUTHORS.txt
+   * The complete set of contributors may be found at
+   * http://polymer.github.io/CONTRIBUTORS.txt
+   * Code distributed by Google as part of the polymer project is also
+   * subject to an additional IP rights grant found at
+   * http://polymer.github.io/PATENTS.txt
+   */
+
   /** MobX - (c) Michel Weststrate 2015 - 2018 - MIT Licensed */
 
   /*! *****************************************************************************
@@ -6153,7 +6167,7 @@
   }
 
   function _templateObject3() {
-    const data$$1 = _taggedTemplateLiteral(["\n      <div>\n        <h1>Complete!</h1>\n        <dl>\n          <dt>Questions missed:</dt>\n          <dd>", " of ", "</dd>\n          <dt>Questions most missed:</dt>\n          ", "\n        </dl>\n      </div>\n    "]);
+    const data$$1 = _taggedTemplateLiteral(["\n      <div>\n        <h1>Complete!</h1>\n        <dl>\n          <dt>Questions missed:</dt>\n          <dd>", " of ", "</dd>\n          <dd>", " correct</dd>\n          <dt>Questions most missed:</dt>\n          ", "\n        </dl>\n        <button @click=", ">Retake the test</button>\n      </div>\n    "]);
 
     _templateObject3 = function _templateObject3() {
       return data$$1;
@@ -6173,7 +6187,7 @@
   }
 
   function _templateObject() {
-    const data$$1 = _taggedTemplateLiteral(["\n      <p>correct: ", "</p>\n      <p>incorrect: ", "</p>\n      <p>index: ", "</p>\n      <p>pass: ", "</p>\n      <details open>\n        <summary>", "</summary>\n        <div>\n          <ul>\n            ", "\n          </ul>\n          <button @click=", ">\n            Correct\n          </button>\n          <button @click=", ">\n            Incorrect\n          </button>\n        </div>\n      </details>\n    "]);
+    const data$$1 = _taggedTemplateLiteral(["\n      <p>correct: ", "</p>\n      <p>incorrect: ", "</p>\n      <p>index: ", "</p>\n      <p>pass: ", "</p>\n      <p>open: ", "</p>\n      <details ?open=", ">\n        <summary\n          @click=", "\n          >", "</summary\n        >\n        <div>\n          <ul>\n            ", "\n          </ul>\n          <button @click=", ">\n            Correct\n          </button>\n          <button @click=", ">\n            Incorrect\n          </button>\n        </div>\n      </details>\n      <footer>\n        <dl>\n          <dt>Correct:</dt>\n          <dd>\n            <progress\n              value=", "\n              max=", "\n              >", "\n            </progress>\n            ", "\n          </dd>\n        </dl>\n      </footer>\n    "]);
 
     _templateObject = function _templateObject() {
       return data$$1;
@@ -6193,11 +6207,13 @@
     constructor(initState) {
       this.questions = initState.questions;
       this.pass = 0;
+      this.open = false;
     }
 
     markAsCorrect(item) {
       runInAction$$1(() => {
         item.correct = item.correct + 1;
+        this.toggleOpen();
         this.nextPass();
       });
     }
@@ -6206,6 +6222,7 @@
       runInAction$$1(() => {
         item.incorrect = item.incorrect + 1;
         item.pass = item.pass + 1;
+        this.toggleOpen();
         this.nextPass();
       });
     }
@@ -6214,6 +6231,24 @@
       if (this.toBeAnswered.length === 0 && this.incorrect.length > 0) {
         this.pass = this.pass + 1;
       }
+    }
+
+    toggleOpen() {
+      runInAction$$1(() => {
+        this.open = !this.open;
+      });
+    }
+
+    reset() {
+      runInAction$$1(() => {
+        this.questions.forEach(q => {
+          q.pass = 0;
+          q.correct = 0;
+          q.incorrect = 0;
+        });
+        debugger;
+        this.pass = 0;
+      });
     }
 
     get toBeAnswered() {
@@ -6236,10 +6271,18 @@
       return this.questions.filter(item => item.incorrect);
     }
 
+    get notIncorrect() {
+      return this.questions.filter(item => item.correct && !item.incorrect);
+    }
+
     get mostDifficultQuestions() {
       return this.questions.filter(item => {
         return item.incorrect && item.pass === this.pass - 1;
       });
+    }
+
+    get percentCorrect() {
+      return "".concat(Math.floor(this.notIncorrect.length / this.questions.length * 100), "%");
     }
 
   }
@@ -6247,12 +6290,15 @@
   decorate$$1(Store, {
     questions: observable$$1,
     pass: observable$$1,
+    open: observable$$1,
     // index: observable,
     toBeAnswered: computed$$1,
     currentQuestion: computed$$1,
     correct: computed$$1,
     incorrect: computed$$1,
-    mostDifficultQuestions: computed$$1
+    notIncorrect: computed$$1,
+    mostDifficultQuestions: computed$$1,
+    percentCorrect: computed$$1
   });
 
   const App = store => {
@@ -6261,22 +6307,22 @@
     // const current = store.currentQuestion;
     // console.log(store.questions);
     // if (current) {
-    console.log(store.questions);
-
     if (store.toBeAnswered.length > 0) {
-      console.log("toBeAnswered", store.toBeAnswered);
       const idx = randomInRange(0, store.toBeAnswered.length);
       const current = store.toBeAnswered[idx];
-      return html(_templateObject(), store.correct.length, store.incorrect.length, current.id, store.pass, current.question, current.answers.map(answer => {
+      return html(_templateObject(), store.correct.length, store.incorrect.length, current.id, store.pass, store.open, store.open, e => {
+        e.preventDefault();
+        store.toggleOpen();
+      }, current.question, current.answers.map(answer => {
         return html(_templateObject2(), answer);
-      }), () => store.markAsCorrect(current), () => store.markAsIncorrect(current));
+      }), () => store.markAsCorrect(current), () => store.markAsIncorrect(current), store.correct.length, store.questions.length, store.percentCorrect, store.percentCorrect);
     } else {
       console.log(toJS$$1(store));
-      return html(_templateObject3(), store.incorrect.length, store.questions.length, store.mostDifficultQuestions.map(item => {
+      return html(_templateObject3(), store.incorrect.length, store.questions.length, store.percentCorrect, store.mostDifficultQuestions.map(item => {
         return html(_templateObject4(), item.question, item.answers.map(answer => {
           return html(_templateObject5(), answer);
         }));
-      }));
+      }), () => store.reset());
     }
   }; // states.map(function(state) {
   //   // document.write("<pre>" + JSON.stringify(state, null, 2) + "</pre>");
@@ -6285,7 +6331,7 @@
   // states.map(state => render(App(state, actions), document.body));
 
 
-  const store = new Store({
+  const store = window.store = new Store({
     questions: kv
   });
   autorun$$1(() => {
