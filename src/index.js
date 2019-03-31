@@ -5,7 +5,8 @@ import {
   action,
   autorun,
   decorate,
-  runInAction
+  runInAction,
+  toJS
 } from "mobx";
 
 import data from "./data";
@@ -28,6 +29,7 @@ class Store {
   markAsCorrect(item) {
     runInAction(() => {
       item.correct = item.correct + 1;
+      this.nextPass();
     });
   }
 
@@ -35,16 +37,22 @@ class Store {
     runInAction(() => {
       item.incorrect = item.incorrect + 1;
       item.pass = item.pass + 1;
-      if (this.toBeAnswered.length === 0 && this.incorrect.length > 0) {
-        this.pass = this.pass + 1;
-      }
+      this.nextPass();
     });
   }
 
+  nextPass() {
+    if (this.toBeAnswered.length === 0 && this.incorrect.length > 0) {
+      this.pass = this.pass + 1;
+    }
+    n;
+  }
+
   get toBeAnswered() {
-    return this.questions.filter(
-      item => item.correct === 0 && item.pass <= this.pass
-    );
+    return this.questions.filter(item => {
+      // debugger;
+      return item.correct === 0 && item.pass <= this.pass;
+    });
   }
 
   get currentQuestion() {
@@ -57,6 +65,11 @@ class Store {
   get incorrect() {
     return this.questions.filter(item => item.incorrect);
   }
+  get mostDifficultQuestions() {
+    return this.questions.filter(
+      item => item.incorrect && item.pass === this.pass
+    );
+  }
 }
 
 decorate(Store, {
@@ -66,15 +79,21 @@ decorate(Store, {
   toBeAnswered: computed,
   currentQuestion: computed,
   correct: computed,
-  incorrect: computed
+  incorrect: computed,
+  mostDifficultQuestions: computed
 });
 
 const App = store => {
   // console.log("incorrect", store.questions.filter(item => item.incorrect));
   // console.log("data", store.questions);
-  const current = store.currentQuestion;
+  // const current = store.currentQuestion;
+  // console.log(store.questions);
+  // if (current) {
   console.log(store.questions);
-  if (current) {
+  if (store.toBeAnswered.length > 0) {
+    console.log("toBeAnswered", store.toBeAnswered);
+    const idx = randomInRange(0, store.toBeAnswered.length);
+    const current = store.toBeAnswered[idx];
     return html`
       <p>correct: ${store.correct.length}</p>
       <p>incorrect: ${store.incorrect.length}</p>
@@ -100,8 +119,27 @@ const App = store => {
       </details>
     `;
   } else {
+    console.log(toJS(store));
+    debugger;
     return html`
-      <div>COMPLETE!</div>
+      <div>
+        <h1>Complete!</h1>
+        <dl>
+          <dt>Questions missed:</dt>
+          <dd>${store.incorrect.length}</dd>
+          <dt>Questions most missed:</dt>
+          ${store.mostDifficultQuestions.map(item => {
+            return html`
+              <dd>
+                <dl>
+                  <dt>${item.question}</dt>
+                  <dd>${item.answer}</dd>
+                </dl>
+              </dd>
+            `;
+          })}
+        </dl>
+      </div>
     `;
   }
 };
@@ -118,3 +156,5 @@ const store = new Store({ questions: kv });
 autorun(() => {
   render(App(store), document.getElementById("app"));
 });
+
+console.error("3 options, incorrect, incorrect, correct => DONE ???");
