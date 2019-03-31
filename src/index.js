@@ -45,7 +45,6 @@ class Store {
     if (this.toBeAnswered.length === 0 && this.incorrect.length > 0) {
       this.pass = this.pass + 1;
     }
-    n;
   }
 
   get toBeAnswered() {
