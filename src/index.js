@@ -23,7 +23,6 @@ class Store {
   constructor(initState) {
     this.questions = initState.questions;
     this.pass = 0;
-    // this.index = this.nextQuestion;
   }
 
   markAsCorrect(item) {
@@ -36,16 +35,19 @@ class Store {
     runInAction(() => {
       item.incorrect = item.incorrect + 1;
       item.pass = item.pass + 1;
+      if (this.toBeAnswered.length === 0 && this.incorrect.length > 0) {
+        this.pass = this.pass + 1;
+      }
     });
   }
 
   get toBeAnswered() {
     return this.questions.filter(
-      item => item.correct === 0 && this.pass <= item.pass
+      item => item.correct === 0 && item.pass <= this.pass
     );
   }
 
-  get current() {
+  get currentQuestion() {
     const newIdx = randomInRange(0, this.toBeAnswered.length);
     return this.toBeAnswered[newIdx];
   }
@@ -59,10 +61,10 @@ class Store {
 
 decorate(Store, {
   questions: observable,
-  passes: observable,
+  pass: observable,
   // index: observable,
   toBeAnswered: computed,
-  current: computed,
+  currentQuestion: computed,
   correct: computed,
   incorrect: computed
 });
@@ -70,13 +72,14 @@ decorate(Store, {
 const App = store => {
   // console.log("incorrect", store.questions.filter(item => item.incorrect));
   // console.log("data", store.questions);
-  const current = store.current;
+  const current = store.currentQuestion;
   console.log(store.questions);
   if (current) {
     return html`
       <p>correct: ${store.correct.length}</p>
       <p>incorrect: ${store.incorrect.length}</p>
-      <p>index: ${store.index}</p>
+      <p>index: ${current.id}</p>
+      <p>pass: ${store.pass}</p>
       <details open>
         <summary>${current.question}</summary>
         <div>

@@ -5712,7 +5712,7 @@
   }
 
   function _templateObject() {
-    const data$$1 = _taggedTemplateLiteral(["\n      <p>correct: ", "</p>\n      <p>incorrect: ", "</p>\n      <p>index: ", "</p>\n      <details open>\n        <summary>", "</summary>\n        <div>\n          <ul>\n            ", "\n          </ul>\n          <button @click=", ">\n            Correct\n          </button>\n          <button @click=", ">\n            Incorrect\n          </button>\n        </div>\n      </details>\n    "]);
+    const data$$1 = _taggedTemplateLiteral(["\n      <p>correct: ", "</p>\n      <p>incorrect: ", "</p>\n      <p>index: ", "</p>\n      <p>pass: ", "</p>\n      <details open>\n        <summary>", "</summary>\n        <div>\n          <ul>\n            ", "\n          </ul>\n          <button @click=", ">\n            Correct\n          </button>\n          <button @click=", ">\n            Incorrect\n          </button>\n        </div>\n      </details>\n    "]);
 
     _templateObject = function _templateObject() {
       return data$$1;
@@ -5731,7 +5731,7 @@
   class Store {
     constructor(initState) {
       this.questions = initState.questions;
-      this.pass = 0; // this.index = this.nextQuestion;
+      this.pass = 0;
     }
 
     markAsCorrect(item) {
@@ -5744,14 +5744,18 @@
       runInAction$$1(() => {
         item.incorrect = item.incorrect + 1;
         item.pass = item.pass + 1;
+
+        if (this.toBeAnswered.length === 0 && this.incorrect.length > 0) {
+          this.pass = this.pass + 1;
+        }
       });
     }
 
     get toBeAnswered() {
-      return this.questions.filter(item => item.correct === 0 && this.pass <= item.pass);
+      return this.questions.filter(item => item.correct === 0 && item.pass <= this.pass);
     }
 
-    get current() {
+    get currentQuestion() {
       const newIdx = randomInRange(0, this.toBeAnswered.length);
       return this.toBeAnswered[newIdx];
     }
@@ -5768,10 +5772,10 @@
 
   decorate$$1(Store, {
     questions: observable$$1,
-    passes: observable$$1,
+    pass: observable$$1,
     // index: observable,
     toBeAnswered: computed$$1,
-    current: computed$$1,
+    currentQuestion: computed$$1,
     correct: computed$$1,
     incorrect: computed$$1
   });
@@ -5779,11 +5783,11 @@
   const App = store => {
     // console.log("incorrect", store.questions.filter(item => item.incorrect));
     // console.log("data", store.questions);
-    const current = store.current;
+    const current = store.currentQuestion;
     console.log(store.questions);
 
     if (current) {
-      return html(_templateObject(), store.correct.length, store.incorrect.length, store.index, current.question, current.answers.map(answer => {
+      return html(_templateObject(), store.correct.length, store.incorrect.length, current.id, store.pass, current.question, current.answers.map(answer => {
         return html(_templateObject2(), answer);
       }), () => store.markAsCorrect(current), () => store.markAsIncorrect(current));
     } else {
