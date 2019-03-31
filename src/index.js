@@ -1,0 +1,117 @@
+import { html, render } from "lit-html";
+import {
+  observable,
+  computed,
+  action,
+  autorun,
+  decorate,
+  runInAction
+} from "mobx";
+
+import data from "./data";
+import { randomInRange } from "./utils";
+
+const kv = data.reduce((acc, item) => {
+  item.incorrect = 0;
+  item.correct = 0;
+  item.pass = 0;
+  acc.push(item);
+  return acc;
+}, []);
+
+class Store {
+  constructor(initState) {
+    this.questions = initState.questions;
+    this.pass = 0;
+    // this.index = this.nextQuestion;
+  }
+
+  markAsCorrect(item) {
+    runInAction(() => {
+      item.correct = item.correct + 1;
+    });
+  }
+
+  markAsIncorrect(item) {
+    runInAction(() => {
+      item.incorrect = item.incorrect + 1;
+      item.pass = item.pass + 1;
+    });
+  }
+
+  get toBeAnswered() {
+    return this.questions.filter(
+      item => item.correct === 0 && this.pass <= item.pass
+    );
+  }
+
+  get current() {
+    const newIdx = randomInRange(0, this.toBeAnswered.length);
+    return this.toBeAnswered[newIdx];
+  }
+  get correct() {
+    return this.questions.filter(item => item.correct);
+  }
+  get incorrect() {
+    return this.questions.filter(item => item.incorrect);
+  }
+}
+
+decorate(Store, {
+  questions: observable,
+  passes: observable,
+  // index: observable,
+  toBeAnswered: computed,
+  current: computed,
+  correct: computed,
+  incorrect: computed
+});
+
+const App = store => {
+  // console.log("incorrect", store.questions.filter(item => item.incorrect));
+  // console.log("data", store.questions);
+  const current = store.current;
+  console.log(store.questions);
+  if (current) {
+    return html`
+      <p>correct: ${store.correct.length}</p>
+      <p>incorrect: ${store.incorrect.length}</p>
+      <p>index: ${store.index}</p>
+      <details open>
+        <summary>${current.question}</summary>
+        <div>
+          <ul>
+            ${current.answers.map(answer => {
+              return html`
+                <li>${answer}</li>
+              `;
+            })}
+          </ul>
+          <button @click=${() => store.markAsCorrect(current)}>
+            Correct
+          </button>
+          <button @click=${() => store.markAsIncorrect(current)}>
+            Incorrect
+          </button>
+        </div>
+      </details>
+    `;
+  } else {
+    return html`
+      <div>COMPLETE!</div>
+    `;
+  }
+};
+
+// states.map(function(state) {
+//   // document.write("<pre>" + JSON.stringify(state, null, 2) + "</pre>");
+//   render(myTemplate(state), document.body);
+// });
+
+// states.map(state => render(App(state, actions), document.body));
+
+const store = new Store({ questions: kv });
+
+autorun(() => {
+  render(App(store), document.getElementById("app"));
+});
