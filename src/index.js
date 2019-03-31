@@ -65,9 +65,9 @@ class Store {
     return this.questions.filter(item => item.incorrect);
   }
   get mostDifficultQuestions() {
-    return this.questions.filter(
-      item => item.incorrect && item.pass === this.pass
-    );
+    return this.questions.filter(item => {
+      return item.incorrect && item.pass === this.pass - 1;
+    });
   }
 }
 
@@ -119,20 +119,23 @@ const App = store => {
     `;
   } else {
     console.log(toJS(store));
-    debugger;
     return html`
       <div>
         <h1>Complete!</h1>
         <dl>
           <dt>Questions missed:</dt>
-          <dd>${store.incorrect.length}</dd>
+          <dd>${store.incorrect.length} of ${store.questions.length}</dd>
           <dt>Questions most missed:</dt>
           ${store.mostDifficultQuestions.map(item => {
             return html`
               <dd>
                 <dl>
                   <dt>${item.question}</dt>
-                  <dd>${item.answer}</dd>
+                  ${item.answers.map(answer => {
+                    return html`
+                      <dd>${answer}</dd>
+                    `;
+                  })}
                 </dl>
               </dd>
             `;
@@ -155,5 +158,3 @@ const store = new Store({ questions: kv });
 autorun(() => {
   render(App(store), document.getElementById("app"));
 });
-
-console.error("3 options, incorrect, incorrect, correct => DONE ???");

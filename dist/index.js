@@ -6132,8 +6132,18 @@
     return Math.floor(Math.random() * (max - min)) + min;
   }
 
+  function _templateObject5() {
+    const data$$1 = _taggedTemplateLiteral(["\n                      <dd>", "</dd>\n                    "]);
+
+    _templateObject5 = function _templateObject5() {
+      return data$$1;
+    };
+
+    return data$$1;
+  }
+
   function _templateObject4() {
-    const data$$1 = _taggedTemplateLiteral(["\n              <dd>\n                <dl>\n                  <dt>", "</dt>\n                  <dd>", "</dd>\n                </dl>\n              </dd>\n            "]);
+    const data$$1 = _taggedTemplateLiteral(["\n              <dd>\n                <dl>\n                  <dt>", "</dt>\n                  ", "\n                </dl>\n              </dd>\n            "]);
 
     _templateObject4 = function _templateObject4() {
       return data$$1;
@@ -6143,7 +6153,7 @@
   }
 
   function _templateObject3() {
-    const data$$1 = _taggedTemplateLiteral(["\n      <div>\n        <h1>Complete!</h1>\n        <dl>\n          <dt>Questions missed:</dt>\n          <dd>", "</dd>\n          <dt>Questions most missed:</dt>\n          ", "\n        </dl>\n      </div>\n    "]);
+    const data$$1 = _taggedTemplateLiteral(["\n      <div>\n        <h1>Complete!</h1>\n        <dl>\n          <dt>Questions missed:</dt>\n          <dd>", " of ", "</dd>\n          <dt>Questions most missed:</dt>\n          ", "\n        </dl>\n      </div>\n    "]);
 
     _templateObject3 = function _templateObject3() {
       return data$$1;
@@ -6227,7 +6237,9 @@
     }
 
     get mostDifficultQuestions() {
-      return this.questions.filter(item => item.incorrect && item.pass === this.pass);
+      return this.questions.filter(item => {
+        return item.incorrect && item.pass === this.pass - 1;
+      });
     }
 
   }
@@ -6260,9 +6272,10 @@
       }), () => store.markAsCorrect(current), () => store.markAsIncorrect(current));
     } else {
       console.log(toJS$$1(store));
-      debugger;
-      return html(_templateObject3(), store.incorrect.length, store.mostDifficultQuestions.map(item => {
-        return html(_templateObject4(), item.question, item.answer);
+      return html(_templateObject3(), store.incorrect.length, store.questions.length, store.mostDifficultQuestions.map(item => {
+        return html(_templateObject4(), item.question, item.answers.map(answer => {
+          return html(_templateObject5(), answer);
+        }));
       }));
     }
   }; // states.map(function(state) {
@@ -6278,6 +6291,5 @@
   autorun$$1(() => {
     render(App(store), document.getElementById("app"));
   });
-  console.error("3 options, incorrect, incorrect, correct => DONE ???");
 
 }());
