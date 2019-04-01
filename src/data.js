@@ -18,7 +18,7 @@ export default [
     question:
       "The idea of self-government is in the first three words of the Constitution. What are these words?",
     answers: ["We the People"]
-  }
+  },
   // {
   //   id: 4,
   //   question: "What is an amendment?",
@@ -32,17 +32,17 @@ export default [
   //   question: "What do we call the first ten amendments to the Constitution?",
   //   answers: ["the Bill of Rights"]
   // },
-  // {
-  //   id: 6,
-  //   question: "What is <b>one</b> right or freedom from the First Amendment?",
-  //   answers: [
-  //     "speech",
-  //     "religion",
-  //     "assembly",
-  //     "press",
-  //     "petition the government"
-  //   ]
-  // },
+  {
+    id: 6,
+    question: "What is <b>one</b> right or freedom from the First Amendment?",
+    answers: [
+      "speech",
+      "religion",
+      "assembly",
+      "press",
+      "petition the government"
+    ]
+  }
   // {
   //   id: 7,
   //   question: "How many amendments does the Constitution have?",

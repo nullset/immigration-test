@@ -15,6 +15,33 @@
      * http://polymer.github.io/PATENTS.txt
      */
     const directives = new WeakMap();
+    /**
+     * Brands a function as a directive so that lit-html will call the function
+     * during template rendering, rather than passing as a value.
+     *
+     * @param f The directive factory function. Must be a function that returns a
+     * function of the signature `(part: Part) => void`. The returned function will
+     * be called with the part object
+     *
+     * @example
+     *
+     * ```
+     * import {directive, html} from 'lit-html';
+     *
+     * const immutable = directive((v) => (part) => {
+     *   if (part.value !== v) {
+     *     part.setValue(v)
+     *   }
+     * });
+     * ```
+     */
+    // tslint:disable-next-line:no-any
+
+    const directive = f => (...args) => {
+      const d = f(...args);
+      directives.set(d, true);
+      return d;
+    };
     const isDirective = o => {
       return typeof o === 'function' && directives.has(o);
     };
@@ -5283,8 +5310,57 @@
       }));
     }
 
+    /**
+     * @license
+     * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+     * This code may only be used under the BSD style license found at
+     * http://polymer.github.io/LICENSE.txt
+     * The complete set of authors may be found at
+     * http://polymer.github.io/AUTHORS.txt
+     * The complete set of contributors may be found at
+     * http://polymer.github.io/CONTRIBUTORS.txt
+     * Code distributed by Google as part of the polymer project is also
+     * subject to an additional IP rights grant found at
+     * http://polymer.github.io/PATENTS.txt
+     */
+    // unsafeHTML directive, and the DocumentFragment that was last set as a value.
+    // The DocumentFragment is used as a unique key to check if the last value
+    // rendered to the part was with unsafeHTML. If not, we'll always re-render the
+    // value passed to unsafeHTML.
+
+    const previousValues = new WeakMap();
+    /**
+     * Renders the result as HTML, rather than text.
+     *
+     * Note, this is unsafe to use with any user-provided input that hasn't been
+     * sanitized or escaped, as it may lead to cross-site-scripting
+     * vulnerabilities.
+     */
+
+    const unsafeHTML = directive(value => part => {
+      if (!(part instanceof NodePart)) {
+        throw new Error('unsafeHTML can only be used in text bindings');
+      }
+
+      const previousValue = previousValues.get(part);
+
+      if (previousValue !== undefined && isPrimitive(value) && value === previousValue.value && part.value === previousValue.fragment) {
+        return;
+      }
+
+      const template = document.createElement('template');
+      template.innerHTML = value; // innerHTML casts to string internally
+
+      const fragment = document.importNode(template.content, true);
+      part.setValue(fragment);
+      previousValues.set(part, {
+        value,
+        fragment
+      });
+    });
+
     function _templateObject2() {
-      const data = _taggedTemplateLiteral(["\n              <li>", "</li>\n            "]);
+      const data = _taggedTemplateLiteral(["\n                <li>", "</li>\n              "]);
 
       _templateObject2 = function _templateObject2() {
         return data;
@@ -5294,7 +5370,7 @@
     }
 
     function _templateObject() {
-      const data = _taggedTemplateLiteral(["\n    <p>correct: ", "</p>\n    <p>incorrect: ", "</p>\n    <p>index: ", "</p>\n    <p>pass: ", "</p>\n    <p>open: ", "</p>\n    <details ?open=", ">\n      <summary\n        @click=", "\n        >", "</summary\n      >\n      <div>\n        <ul>\n          ", "\n        </ul>\n        <button @click=", ">\n          Correct\n        </button>\n        <button @click=", ">\n          Incorrect\n        </button>\n      </div>\n    </details>\n    <footer>\n      <dl>\n        <dt>Correct:</dt>\n        <dd>\n          <progress value=", " max=", "\n            >", "\n          </progress>\n          ", "\n        </dd>\n      </dl>\n    </footer>\n  "]);
+      const data = _taggedTemplateLiteral(["\n    <header>\n      <progress value=", " max=", "\n        >", "\n      </progress>\n      <div>", "</div>\n    </header>\n    <main>\n      <details ?open=", ">\n        <summary\n          @click=", "\n          ><div>", "</div></summary\n        >\n        <div class=\"answers\">\n          <ul>\n            ", "\n          </ul>\n        </div>\n      </details>\n    </main>\n    <footer>\n      <fieldset>\n        <div>\n          <button\n            type=\"button\"\n            @click=", "\n            class=\"button button--incorrect\"\n          >\n            Incorrect\n          </button>\n          <button\n            type=\"button\"\n            @click=", "\n            class=\"button button--correct\"\n          >\n            Correct\n          </button>\n        </div>\n      </fieldset>\n    </footer>\n    <div hidden>\n      <p>correct: ", "</p>\n      <p>incorrect: ", "</p>\n      <p>index: ", "</p>\n      <p>pass: ", "</p>\n      <p>open: ", "</p>\n    </div>\n  "]);
 
       _templateObject = function _templateObject() {
         return data;
@@ -5305,12 +5381,12 @@
 
     const Question = store => {
       const current = store.currentQuestion;
-      return html(_templateObject(), store.correct.length, store.incorrect.length, current.id, store.pass, store.open, store.open, e => {
+      return html(_templateObject(), store.correct.length, store.questions.length, store.percentCorrect, store.percentCorrect, store.open, e => {
         e.preventDefault();
         store.toggleOpen();
-      }, current.question, current.answers.map(answer => {
+      }, unsafeHTML(current.question), current.answers.map(answer => {
         return html(_templateObject2(), answer);
-      }), () => store.markAsCorrect(current), () => store.markAsIncorrect(current), store.correct.length, store.questions.length, store.percentCorrect, store.percentCorrect);
+      }), () => store.markAsIncorrect(current), () => store.markAsCorrect(current), store.correct.length, store.incorrect.length, current.id, store.pass, store.open);
     };
 
     function _templateObject3() {
@@ -5362,31 +5438,24 @@
     }, {
       id: 3,
       question: "The idea of self-government is in the first three words of the Constitution. What are these words?",
-      answers: ["We the People"] // {
-      //   id: 4,
-      //   question: "What is an amendment?",
-      //   answers: [
-      //     "a change (to the Constitution)",
-      //     "an addition (to the Constitution)"
-      //   ]
-      // },
-      // {
-      //   id: 5,
-      //   question: "What do we call the first ten amendments to the Constitution?",
-      //   answers: ["the Bill of Rights"]
-      // },
-      // {
-      //   id: 6,
-      //   question: "What is <b>one</b> right or freedom from the First Amendment?",
-      //   answers: [
-      //     "speech",
-      //     "religion",
-      //     "assembly",
-      //     "press",
-      //     "petition the government"
-      //   ]
-      // },
-      // {
+      answers: ["We the People"]
+    }, // {
+    //   id: 4,
+    //   question: "What is an amendment?",
+    //   answers: [
+    //     "a change (to the Constitution)",
+    //     "an addition (to the Constitution)"
+    //   ]
+    // },
+    // {
+    //   id: 5,
+    //   question: "What do we call the first ten amendments to the Constitution?",
+    //   answers: ["the Bill of Rights"]
+    // },
+    {
+      id: 6,
+      question: "What is <b>one</b> right or freedom from the First Amendment?",
+      answers: ["speech", "religion", "assembly", "press", "petition the government"] // {
       //   id: 7,
       //   question: "How many amendments does the Constitution have?",
       //   answers: ["27"]
@@ -6219,7 +6288,7 @@
       }
     }
 
-    var css = "body {\n  background: red; }\n";
+    var css = "body {\n  font-family: sans-serif; }\n\n*, *:before, *:after {\n  box-sizing: border-box; }\n\nbody, #app {\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  margin: 0; }\n\n#app > * {\n  padding: 0.5rem 1rem;\n  border-top: 1px solid gray; }\n  #app > *:first-child {\n    padding-top: 1rem;\n    border-top: none; }\n  #app > *:last-child {\n    padding-bottom: 1rem; }\n\nheader {\n  background: #003366;\n  display: flex;\n  flex-direction: column;\n  text-align: center;\n  color: #fff;\n  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset; }\n\nmain {\n  flex: 1 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  background: repeating-linear-gradient(45deg, #f5f5f5, #f5f5f5 10px, #fff 10px, #fff 20px); }\n\nfooter {\n  background: #e8e8e8; }\n\ndetails {\n  transform: perspective(0);\n  display: flex;\n  flex-direction: column; }\n  details summary {\n    text-align: center;\n    font-size: 3rem;\n    transition: font-size 0.2s;\n    outline: none;\n    flex: 1 1;\n    display: flex;\n    flex-direction: column;\n    align-items: center; }\n    details summary > div {\n      padding: 0.5rem;\n      background: #fff;\n      box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12); }\n  details summary::-webkit-details-marker {\n    display: none; }\n  details .answers {\n    display: flex;\n    justify-content: center;\n    opacity: 0;\n    font-size: 1rem;\n    transition: all 2.2s; }\n    details .answers ul {\n      display: inline-block;\n      margin-bottom: 0; }\n  details:not([open]) summary:after {\n    content: \"Show answers\";\n    background: #003366;\n    color: #fff;\n    border: 1px solid;\n    display: inline-block;\n    font-size: 1rem;\n    padding: 1rem 2rem;\n    margin-top: 1rem;\n    cursor: pointer; }\n    details:not([open]) summary:after:hover {\n      background: #004c99; }\n  details[open] summary {\n    font-size: 1rem; }\n  details[open] .answers {\n    opacity: 1;\n    font-size: 2rem; }\n\n.button {\n  border: 1px solid;\n  padding: 1rem 2rem;\n  cursor: pointer;\n  font-size: 1rem;\n  color: #fff; }\n  .button:hover {\n    color: #fff; }\n  .button--incorrect {\n    background: #CC3333; }\n    .button--incorrect:hover {\n      background: #d92626; }\n  .button--correct {\n    background: #457500; }\n    .button--correct:hover {\n      background: #63a800; }\n\nfieldset {\n  display: block;\n  border: none;\n  margin: 0;\n  padding: 0; }\n  fieldset > div {\n    display: flex;\n    justify-content: space-between; }\n\nprogress {\n  width: 100%;\n  border: 1px solid #fff;\n  margin-bottom: 0.5rem; }\n\nprogress[value]::-webkit-progress-bar {\n  background-color: #eee;\n  border-radius: 2px;\n  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset; }\n\nprogress[value]::-webkit-progress-value::before {\n  content: '80%';\n  position: absolute;\n  right: 0;\n  top: -125%; }\n";
     styleInject(css);
 
     const App = store$$1 => {

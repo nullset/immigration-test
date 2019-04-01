@@ -1,48 +1,62 @@
 import { html, render } from "lit-html";
+import { unsafeHTML } from "lit-html/directives/unsafe-html";
 
 const Question = store => {
   const current = store.currentQuestion;
   return html`
-    <p>correct: ${store.correct.length}</p>
-    <p>incorrect: ${store.incorrect.length}</p>
-    <p>index: ${current.id}</p>
-    <p>pass: ${store.pass}</p>
-    <p>open: ${store.open}</p>
-    <details ?open=${store.open}>
-      <summary
-        @click=${e => {
-          e.preventDefault();
-          store.toggleOpen();
-        }}
-        >${current.question}</summary
-      >
-      <div>
-        <ul>
-          ${current.answers.map(answer => {
-            return html`
-              <li>${answer}</li>
-            `;
-          })}
-        </ul>
-        <button @click=${() => store.markAsCorrect(current)}>
-          Correct
-        </button>
-        <button @click=${() => store.markAsIncorrect(current)}>
-          Incorrect
-        </button>
-      </div>
-    </details>
+    <header>
+      <progress value=${store.correct.length} max=${store.questions.length}
+        >${store.percentCorrect}
+      </progress>
+      <div>${store.percentCorrect}</div>
+    </header>
+    <main>
+      <details ?open=${store.open}>
+        <summary
+          @click=${e => {
+            e.preventDefault();
+            store.toggleOpen();
+          }}
+          ><div>${unsafeHTML(current.question)}</div></summary
+        >
+        <div class="answers">
+          <ul>
+            ${current.answers.map(answer => {
+              return html`
+                <li>${answer}</li>
+              `;
+            })}
+          </ul>
+        </div>
+      </details>
+    </main>
     <footer>
-      <dl>
-        <dt>Correct:</dt>
-        <dd>
-          <progress value=${store.correct.length} max=${store.questions.length}
-            >${store.percentCorrect}
-          </progress>
-          ${store.percentCorrect}
-        </dd>
-      </dl>
+      <fieldset>
+        <div>
+          <button
+            type="button"
+            @click=${() => store.markAsIncorrect(current)}
+            class="button button--incorrect"
+          >
+            Incorrect
+          </button>
+          <button
+            type="button"
+            @click=${() => store.markAsCorrect(current)}
+            class="button button--correct"
+          >
+            Correct
+          </button>
+        </div>
+      </fieldset>
     </footer>
+    <div hidden>
+      <p>correct: ${store.correct.length}</p>
+      <p>incorrect: ${store.incorrect.length}</p>
+      <p>index: ${current.id}</p>
+      <p>pass: ${store.pass}</p>
+      <p>open: ${store.open}</p>
+    </div>
   `;
 };
 
