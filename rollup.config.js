@@ -28,8 +28,12 @@ module.exports = [
         // exec: true,
       }),
       copy({
-        files: ["src/index.html", "src/service-worker.js"],
+        files: ["src/index.html", "src/service-worker.js", "src/manifest.json"],
         dest: "dist"
+      }),
+      copy({
+        files: ["src/images"],
+        dest: "dist/images"
       }),
       resolve(),
       commonjs({

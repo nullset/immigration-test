@@ -520,7 +520,7 @@ export default [
   },
   {
     id: 75,
-    question: "What was <b>one˘ important thing that Abraham Lincoln did?",
+    question: "What was <b>one</b> important thing that Abraham Lincoln did?",
     answers: [
       "freed the slaves (Emancipation Proclamation)",
       "saved (or preserved) the Union",
@@ -544,7 +544,7 @@ export default [
   },
   {
     id: 78,
-    question: "Name <b>one˘ war fought by the United States in the 1900s.",
+    question: "Name <b>one</b> war fought by the United States in the 1900s.",
     answers: [
       "World War I",
       "World War II",

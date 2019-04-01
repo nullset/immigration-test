@@ -76,8 +76,9 @@ details {
   flex-direction: column;
   summary {
     text-align: center;
-    font-size: 3rem;
-    transition: font-size 0.2s;
+    font-size: 2.25rem;
+    transform: scale(1);
+    transition: all 0.2s;
     outline: none;
     flex: 1 1;
     display: flex;
@@ -102,28 +103,10 @@ details {
     }
   }
 
-  &:not([open]) {
-    summary {
-      // &:after {
-      //   content: "Show answers";
-      //   background: $blue;
-      //   color: #fff;
-      //   border: 1px solid;
-      //   display: inline-block;
-      //   font-size: 1rem;
-      //   padding: 1rem 2rem;
-      //   margin-top: 1rem;
-      //   cursor: pointer;
-      //   &:hover {
-      //     background: #004c99;
-      //   }
-      // }
-    }
-  }
   &[open] {
     summary {
-      // transform: scale(0.4);
-      font-size: 1rem;
+      // font-size: 1rem;
+      transform: scale(0.5);
     }
     .answers {
       opacity: 1;

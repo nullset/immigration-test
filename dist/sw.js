@@ -11,7 +11,12 @@
  * See https://goo.gl/2aRDsh
  */
 
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
+importScripts(
+  "https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js"
+);
+// importScripts(
+//   "https://storage.googleapis.com/workbox-cdn/releases/4.1.1/workbox-sw.js"
+// );
 
 /**
  * The workboxSW.precacheAndRoute() method efficiently caches and responds to
@@ -20,23 +25,35 @@ importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox
  */
 self.__precacheManifest = [
   {
-    "url": "index.css",
-    "revision": "04749e237bfb7bf3907ed256d5bbc4e3"
+    url: "index.css",
+    revision: "04749e237bfb7bf3907ed256d5bbc4e3"
   },
   {
-    "url": "index.html",
-    "revision": "c4af5441dbcce18e24c7319eca7ada3a"
+    url: "index.html",
+    revision: "c4af5441dbcce18e24c7319eca7ada3a"
   },
   {
-    "url": "index.js",
-    "revision": "b3e249a268ed0fd23dc4ff15ba8cbfaf"
+    url: "index.js",
+    revision: "b3e249a268ed0fd23dc4ff15ba8cbfaf"
   },
   {
-    "url": "service-worker.js",
-    "revision": "f966f29d57c61838aec6ed01f6eb2408"
+    url: "service-worker.js",
+    revision: "f966f29d57c61838aec6ed01f6eb2408"
   }
 ].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-workbox.routing.registerRoute(/\.(?:png|jpg|jpeg|svg)$/, workbox.strategies.cacheFirst({ "cacheName":"images", plugins: [new workbox.expiration.Plugin({"maxEntries":10,"purgeOnQuotaError":false})] }), 'GET');
+workbox.routing.registerRoute(
+  /\.(?:png|jpg|jpeg|svg)$/,
+  workbox.strategies.cacheFirst({
+    cacheName: "images",
+    plugins: [
+      new workbox.expiration.Plugin({
+        maxEntries: 10,
+        purgeOnQuotaError: false
+      })
+    ]
+  }),
+  "GET"
+);
