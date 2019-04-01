@@ -2,30 +2,46 @@ import { html } from "lit-html";
 
 const Complete = store => {
   return html`
-    <div>
-      <h1>Complete!</h1>
-      <dl>
-        <dt>Questions missed:</dt>
-        <dd>${store.incorrect.length} of ${store.questions.length}</dd>
-        <dd>${store.percentCorrect} correct</dd>
-        <dt>Questions most missed:</dt>
-        ${store.mostDifficultQuestions.map(item => {
-          return html`
-            <dd>
-              <dl>
-                <dt>${item.question}</dt>
-                ${item.answers.map(answer => {
-                  return html`
-                    <dd>${answer}</dd>
-                  `;
-                })}
-              </dl>
-            </dd>
-          `;
-        })}
-      </dl>
-      <button @click=${() => store.reset()}>Retake the test</button>
-    </div>
+    <header><h1>${store.percentCorrect}% correct</h1></header>
+    <main>
+      <div class="card">
+        <dl>
+          <dt>Questions missed:</dt>
+          <dd>${store.incorrect.length} of ${store.questions.length}</dd>
+
+          <dt ?hidden=${store.percentCorrect === 100}>
+            Questions most missed:
+          </dt>
+          ${store.mostDifficultQuestions.map(item => {
+            return html`
+              <dd ?hidden=${store.percentCorrect === 100}>
+                <dl class="questions-missed">
+                  <dt>${item.question}</dt>
+                  <dd>
+                    <ul>
+                      ${item.answers.map(answer => {
+                        return html`
+                          <li>${answer}</li>
+                        `;
+                      })}
+                    </ul>
+                  </dd>
+                </dl>
+              </dd>
+            `;
+          })}
+        </dl>
+      </div>
+    </main>
+    <footer>
+      <button
+        type="button"
+        class="button button--cta"
+        @click=${() => store.reset()}
+      >
+        Retake the test
+      </button>
+    </footer>
   `;
 };
 

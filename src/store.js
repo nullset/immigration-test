@@ -94,9 +94,7 @@ class Store {
   }
 
   get percentCorrect() {
-    return `${Math.floor(
-      (this.notIncorrect.length / this.questions.length) * 100
-    )}%`;
+    return Math.floor((this.notIncorrect.length / this.questions.length) * 100);
   }
 }
 

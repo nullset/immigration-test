@@ -6,19 +6,24 @@ const Question = store => {
   return html`
     <header>
       <progress value=${store.correct.length} max=${store.questions.length}
-        >${store.percentCorrect}
+        >${store.percentCorrect}%
       </progress>
-      <div>${store.percentCorrect}</div>
+      <div>${store.percentCorrect}%</div>
     </header>
     <main>
       <details ?open=${store.open}>
         <summary
           @click=${e => {
             e.preventDefault();
-            store.toggleOpen();
+            if (!store.open) {
+              store.toggleOpen();
+            }
           }}
-          ><div>${unsafeHTML(current.question)}</div></summary
         >
+          <div class="question card">
+            ${unsafeHTML(current.question)}
+          </div>
+        </summary>
         <div class="answers">
           <ul>
             ${current.answers.map(answer => {
@@ -31,24 +36,30 @@ const Question = store => {
       </details>
     </main>
     <footer>
-      <fieldset>
-        <div>
-          <button
-            type="button"
-            @click=${() => store.markAsIncorrect(current)}
-            class="button button--incorrect"
-          >
-            Incorrect
-          </button>
-          <button
-            type="button"
-            @click=${() => store.markAsCorrect(current)}
-            class="button button--correct"
-          >
-            Correct
-          </button>
-        </div>
-      </fieldset>
+      <button
+        type="button"
+        @click=${() => store.markAsIncorrect(current)}
+        class="button button--incorrect"
+        ?disabled=${!store.open}
+      >
+        Incorrect
+      </button>
+      <button
+        type="button"
+        @click=${() => store.markAsCorrect(current)}
+        class="button button--correct"
+        ?disabled=${!store.open}
+      >
+        Correct
+      </button>
+      <button
+        type="button"
+        class="button button--cta"
+        ?disabled=${store.open}
+        @click=${() => store.toggleOpen()}
+      >
+        Show answers
+      </button>
     </footer>
     <div hidden>
       <p>correct: ${store.correct.length}</p>

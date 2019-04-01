@@ -5370,7 +5370,7 @@
     }
 
     function _templateObject() {
-      const data = _taggedTemplateLiteral(["\n    <header>\n      <progress value=", " max=", "\n        >", "\n      </progress>\n      <div>", "</div>\n    </header>\n    <main>\n      <details ?open=", ">\n        <summary\n          @click=", "\n          ><div>", "</div></summary\n        >\n        <div class=\"answers\">\n          <ul>\n            ", "\n          </ul>\n        </div>\n      </details>\n    </main>\n    <footer>\n      <fieldset>\n        <div>\n          <button\n            type=\"button\"\n            @click=", "\n            class=\"button button--incorrect\"\n          >\n            Incorrect\n          </button>\n          <button\n            type=\"button\"\n            @click=", "\n            class=\"button button--correct\"\n          >\n            Correct\n          </button>\n        </div>\n      </fieldset>\n    </footer>\n    <div hidden>\n      <p>correct: ", "</p>\n      <p>incorrect: ", "</p>\n      <p>index: ", "</p>\n      <p>pass: ", "</p>\n      <p>open: ", "</p>\n    </div>\n  "]);
+      const data = _taggedTemplateLiteral(["\n    <header>\n      <progress value=", " max=", "\n        >", "%\n      </progress>\n      <div>", "%</div>\n    </header>\n    <main>\n      <details ?open=", ">\n        <summary\n          @click=", "\n        >\n          <div class=\"question card\">\n            ", "\n          </div>\n        </summary>\n        <div class=\"answers\">\n          <ul>\n            ", "\n          </ul>\n        </div>\n      </details>\n    </main>\n    <footer>\n      <button\n        type=\"button\"\n        @click=", "\n        class=\"button button--incorrect\"\n        ?disabled=", "\n      >\n        Incorrect\n      </button>\n      <button\n        type=\"button\"\n        @click=", "\n        class=\"button button--correct\"\n        ?disabled=", "\n      >\n        Correct\n      </button>\n      <button\n        type=\"button\"\n        class=\"button button--cta\"\n        ?disabled=", "\n        @click=", "\n      >\n        Show answers\n      </button>\n    </footer>\n    <div hidden>\n      <p>correct: ", "</p>\n      <p>incorrect: ", "</p>\n      <p>index: ", "</p>\n      <p>pass: ", "</p>\n      <p>open: ", "</p>\n    </div>\n  "]);
 
       _templateObject = function _templateObject() {
         return data;
@@ -5383,14 +5383,17 @@
       const current = store.currentQuestion;
       return html(_templateObject(), store.correct.length, store.questions.length, store.percentCorrect, store.percentCorrect, store.open, e => {
         e.preventDefault();
-        store.toggleOpen();
+
+        if (!store.open) {
+          store.toggleOpen();
+        }
       }, unsafeHTML(current.question), current.answers.map(answer => {
         return html(_templateObject2(), answer);
-      }), () => store.markAsIncorrect(current), () => store.markAsCorrect(current), store.correct.length, store.incorrect.length, current.id, store.pass, store.open);
+      }), () => store.markAsIncorrect(current), !store.open, () => store.markAsCorrect(current), !store.open, store.open, () => store.toggleOpen(), store.correct.length, store.incorrect.length, current.id, store.pass, store.open);
     };
 
     function _templateObject3() {
-      const data = _taggedTemplateLiteral(["\n                    <dd>", "</dd>\n                  "]);
+      const data = _taggedTemplateLiteral(["\n                          <li>", "</li>\n                        "]);
 
       _templateObject3 = function _templateObject3() {
         return data;
@@ -5400,7 +5403,7 @@
     }
 
     function _templateObject2$1() {
-      const data = _taggedTemplateLiteral(["\n            <dd>\n              <dl>\n                <dt>", "</dt>\n                ", "\n              </dl>\n            </dd>\n          "]);
+      const data = _taggedTemplateLiteral(["\n              <dd ?hidden=", ">\n                <dl class=\"questions-missed\">\n                  <dt>", "</dt>\n                  <dd>\n                    <ul>\n                      ", "\n                    </ul>\n                  </dd>\n                </dl>\n              </dd>\n            "]);
 
       _templateObject2$1 = function _templateObject2() {
         return data;
@@ -5410,7 +5413,7 @@
     }
 
     function _templateObject$1() {
-      const data = _taggedTemplateLiteral(["\n    <div>\n      <h1>Complete!</h1>\n      <dl>\n        <dt>Questions missed:</dt>\n        <dd>", " of ", "</dd>\n        <dd>", " correct</dd>\n        <dt>Questions most missed:</dt>\n        ", "\n      </dl>\n      <button @click=", ">Retake the test</button>\n    </div>\n  "]);
+      const data = _taggedTemplateLiteral(["\n    <header><h1>", "% correct</h1></header>\n    <main>\n      <div class=\"card\">\n        <dl>\n          <dt>Questions missed:</dt>\n          <dd>", " of ", "</dd>\n\n          <dt ?hidden=", ">\n            Questions most missed:\n          </dt>\n          ", "\n        </dl>\n      </div>\n    </main>\n    <footer>\n      <button\n        type=\"button\"\n        class=\"button button--cta\"\n        @click=", "\n      >\n        Retake the test\n      </button>\n    </footer>\n  "]);
 
       _templateObject$1 = function _templateObject() {
         return data;
@@ -5420,8 +5423,8 @@
     }
 
     const Complete = store => {
-      return html(_templateObject$1(), store.incorrect.length, store.questions.length, store.percentCorrect, store.mostDifficultQuestions.map(item => {
-        return html(_templateObject2$1(), item.question, item.answers.map(answer => {
+      return html(_templateObject$1(), store.percentCorrect, store.incorrect.length, store.questions.length, store.percentCorrect === 100, store.mostDifficultQuestions.map(item => {
+        return html(_templateObject2$1(), store.percentCorrect === 100, item.question, item.answers.map(answer => {
           return html(_templateObject3(), answer);
         }));
       }), () => store.reset());
@@ -5430,32 +5433,46 @@
     var data = [{
       id: 1,
       question: "What is the supreme law of the land?",
-      answers: ["the Constitution"]
-    }, {
-      id: 2,
-      question: "What does the Constitution do?",
-      answers: ["sets up the government", "defines the government", "protects basic rights of Americans"]
-    }, {
-      id: 3,
-      question: "The idea of self-government is in the first three words of the Constitution. What are these words?",
-      answers: ["We the People"]
-    }, // {
-    //   id: 4,
-    //   question: "What is an amendment?",
-    //   answers: [
-    //     "a change (to the Constitution)",
-    //     "an addition (to the Constitution)"
-    //   ]
-    // },
-    // {
-    //   id: 5,
-    //   question: "What do we call the first ten amendments to the Constitution?",
-    //   answers: ["the Bill of Rights"]
-    // },
-    {
-      id: 6,
-      question: "What is <b>one</b> right or freedom from the First Amendment?",
-      answers: ["speech", "religion", "assembly", "press", "petition the government"] // {
+      answers: ["the Constitution"] // {
+      //   id: 2,
+      //   question: "What does the Constitution do?",
+      //   answers: [
+      //     "sets up the government",
+      //     "defines the government",
+      //     "protects basic rights of Americans"
+      //   ]
+      // },
+      // {
+      //   id: 3,
+      //   question:
+      //     "The idea of self-government is in the first three words of the Constitution. What are these words?",
+      //   answers: ["We the People"]
+      // },
+      // {
+      //   id: 4,
+      //   question: "What is an amendment?",
+      //   answers: [
+      //     "a change (to the Constitution)",
+      //     "an addition (to the Constitution)"
+      //   ]
+      // },
+      // {
+      //   id: 5,
+      //   question: "What do we call the first ten amendments to the Constitution?",
+      //   answers: ["the Bill of Rights"]
+      // },
+      // {
+      //   id: 6,
+      //   question: "What is <b>one</b> right or freedom from the First Amendment?",
+      //   answers: [
+      //     "speech",
+      //     "religion",
+      //     "assembly",
+      //     "press",
+      //     "petition the government"
+      //   ]
+      // }
+      // {
       //   id: 7,
       //   question: "How many amendments does the Constitution have?",
       //   answers: ["27"]
@@ -6238,7 +6255,7 @@
       }
 
       get percentCorrect() {
-        return "".concat(Math.floor(this.notIncorrect.length / this.questions.length * 100), "%");
+        return Math.floor(this.notIncorrect.length / this.questions.length * 100);
       }
 
     }
@@ -6288,7 +6305,7 @@
       }
     }
 
-    var css = "body {\n  font-family: sans-serif; }\n\n*, *:before, *:after {\n  box-sizing: border-box; }\n\nbody, #app {\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  margin: 0; }\n\n#app > * {\n  padding: 0.5rem 1rem;\n  border-top: 1px solid gray; }\n  #app > *:first-child {\n    padding-top: 1rem;\n    border-top: none; }\n  #app > *:last-child {\n    padding-bottom: 1rem; }\n\nheader {\n  background: #003366;\n  display: flex;\n  flex-direction: column;\n  text-align: center;\n  color: #fff;\n  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12); }\n\nmain {\n  flex: 1 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  background: repeating-linear-gradient(45deg, #f5f5f5, #f5f5f5 10px, #fff 10px, #fff 20px); }\n\nfooter {\n  background: #e8e8e8; }\n\ndetails {\n  transform: perspective(0);\n  display: flex;\n  flex-direction: column; }\n  details summary {\n    text-align: center;\n    font-size: 3rem;\n    transition: font-size 0.2s;\n    outline: none;\n    flex: 1 1;\n    display: flex;\n    flex-direction: column;\n    align-items: center; }\n    details summary > div {\n      padding: 0.5rem;\n      background: #fff;\n      box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12); }\n  details summary::-webkit-details-marker {\n    display: none; }\n  details .answers {\n    display: flex;\n    justify-content: center;\n    opacity: 0;\n    font-size: 1rem;\n    transition: all 2.2s; }\n    details .answers ul {\n      display: inline-block;\n      margin-bottom: 0; }\n  details:not([open]) summary:after {\n    content: \"Show answers\";\n    background: #003366;\n    color: #fff;\n    border: 1px solid;\n    display: inline-block;\n    font-size: 1rem;\n    padding: 1rem 2rem;\n    margin-top: 1rem;\n    cursor: pointer; }\n    details:not([open]) summary:after:hover {\n      background: #004c99; }\n  details[open] summary {\n    font-size: 1rem; }\n  details[open] .answers {\n    opacity: 1;\n    font-size: 2rem; }\n\n.button {\n  border: 1px solid;\n  padding: 1rem 2rem;\n  cursor: pointer;\n  font-size: 1rem;\n  color: #fff; }\n  .button:hover {\n    color: #fff; }\n  .button--incorrect {\n    background: #CC3333; }\n    .button--incorrect:hover {\n      background: #d92626; }\n  .button--correct {\n    background: #457500; }\n    .button--correct:hover {\n      background: #63a800; }\n\nfieldset {\n  display: block;\n  border: none;\n  margin: 0;\n  padding: 0; }\n  fieldset > div {\n    display: flex;\n    justify-content: space-between; }\n\nprogress {\n  width: 100%;\n  border: 1px solid #fff;\n  margin-bottom: 0.5rem; }\n\nprogress[value]::-webkit-progress-bar {\n  background-color: #eee;\n  border-radius: 2px;\n  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset; }\n\nprogress[value]::-webkit-progress-value::before {\n  content: '80%';\n  position: absolute;\n  right: 0;\n  top: -125%; }\n";
+    var css = "body {\n  font-family: sans-serif; }\n\n*, *:before, *:after {\n  box-sizing: border-box; }\n\nbody, #app {\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  margin: 0; }\n\n#app > * {\n  padding: 0.5rem 1rem;\n  border-top: 1px solid gray; }\n  #app > *:first-child {\n    padding-top: 1rem;\n    border-top: none; }\n  #app > *:last-child {\n    padding-bottom: 1rem; }\n\nheader {\n  background: #003366;\n  display: flex;\n  flex-direction: column;\n  justify-content: baseline;\n  text-align: center;\n  color: #fff;\n  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);\n  min-height: 70px; }\n  header h1 {\n    margin: 0;\n    font-style: italic; }\n\nmain {\n  flex: 1 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  overflow: auto;\n  background: repeating-linear-gradient(45deg, #f5f5f5, #f5f5f5 10px, #fff 10px, #fff 20px); }\n  main .card {\n    padding: 0.5rem;\n    background: #fff;\n    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12); }\n\nfooter {\n  background: #e8e8e8;\n  text-align: center;\n  display: flex;\n  justify-content: space-between; }\n\ndetails {\n  transform: perspective(0);\n  display: flex;\n  flex-direction: column; }\n  details summary {\n    text-align: center;\n    font-size: 3rem;\n    transition: font-size 0.2s;\n    outline: none;\n    flex: 1 1;\n    display: flex;\n    flex-direction: column;\n    align-items: center; }\n    details summary .button {\n      margin-top: 1rem; }\n  details summary::-webkit-details-marker {\n    display: none; }\n  details .answers {\n    display: flex;\n    justify-content: center;\n    opacity: 0;\n    font-size: 1rem;\n    transition: all 2.2s; }\n    details .answers ul {\n      display: inline-block;\n      margin-bottom: 0; }\n  details[open] summary {\n    font-size: 1rem; }\n  details[open] .answers {\n    opacity: 1;\n    font-size: 2rem; }\n\n.button {\n  border: 1px solid;\n  padding: 1rem 2rem;\n  cursor: pointer;\n  font-size: 1rem;\n  color: #fff; }\n  .button:hover {\n    color: #fff; }\n  .button:disabled {\n    display: none; }\n  .button--incorrect {\n    background: #CC3333; }\n    .button--incorrect:hover {\n      background: #db7070; }\n  .button--correct {\n    background: #457500; }\n    .button--correct:hover {\n      background: #4d8200; }\n  .button--cta {\n    background: #003366;\n    margin-left: auto;\n    margin-right: auto; }\n    .button--cta:hover {\n      background: #004c99; }\n\nprogress {\n  width: 100%;\n  border: 1px solid #fff;\n  margin-bottom: 0.5rem; }\n\nprogress[value]::-webkit-progress-bar {\n  background-color: #eee;\n  border-radius: 2px;\n  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset; }\n\nprogress[value]::-webkit-progress-value::before {\n  content: '80%';\n  position: absolute;\n  right: 0;\n  top: -125%; }\n\ndl dt {\n  font-weight: 600; }\n\ndl dd + dt {\n  margin-top: 1rem; }\n\ndl.questions-missed dt {\n  font-style: italic;\n  font-weight: normal; }\n\ndl.questions-missed dd {\n  margin-left: 0; }\n";
     styleInject(css);
 
     const App = store$$1 => {

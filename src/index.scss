@@ -32,15 +32,22 @@ header {
   background: $blue;
   display: flex;
   flex-direction: column;
+  justify-content: baseline;
   text-align: center;
   color: #fff;
   box-shadow: $shadow;
+  min-height: 70px;
+  h1 {
+    margin: 0;
+    font-style: italic;
+  }
 }
 main {
   flex: 1 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  overflow: auto;
   background: repeating-linear-gradient(
     45deg,
     #f5f5f5,
@@ -48,9 +55,17 @@ main {
     #fff 10px,
     #fff 20px
   );
+  .card {
+    padding: 0.5rem;
+    background: #fff;
+    box-shadow: $shadow;
+  }
 }
 footer {
   background: #e8e8e8;
+  text-align: center;
+  display: flex;
+  justify-content: space-between;
   .button {
     // flex-grow: 1;
   }
@@ -68,12 +83,8 @@ details {
     display: flex;
     flex-direction: column;
     align-items: center;
-    // transition: transform 0.5s;
-    // transform: scale(1);
-    > div {
-      padding: 0.5rem;
-      background: #fff;
-      box-shadow: $shadow;
+    .button {
+      margin-top: 1rem;
     }
   }
   summary::-webkit-details-marker {
@@ -93,20 +104,20 @@ details {
 
   &:not([open]) {
     summary {
-      &:after {
-        content: "Show answers";
-        background: $blue;
-        color: #fff;
-        border: 1px solid;
-        display: inline-block;
-        font-size: 1rem;
-        padding: 1rem 2rem;
-        margin-top: 1rem;
-        cursor: pointer;
-        &:hover {
-          background: #004c99;
-        }
-      }
+      // &:after {
+      //   content: "Show answers";
+      //   background: $blue;
+      //   color: #fff;
+      //   border: 1px solid;
+      //   display: inline-block;
+      //   font-size: 1rem;
+      //   padding: 1rem 2rem;
+      //   margin-top: 1rem;
+      //   cursor: pointer;
+      //   &:hover {
+      //     background: #004c99;
+      //   }
+      // }
     }
   }
   &[open] {
@@ -131,30 +142,50 @@ details {
   &:hover {
     color: #fff;
   }
+  &:disabled {
+    display: none;
+  }
   &--incorrect {
     background: $red;
     &:hover {
-      background: #d92626;
+      background: #db7070;
     }
   }
   &--correct {
     background: $green;
     &:hover {
-      background: #63a800;
+      background: #4d8200;
+    }
+  }
+  &--cta {
+    background: $blue;
+    margin-left: auto;
+    margin-right: auto;
+    &:hover {
+      background: #004c99;
     }
   }
 }
 
-fieldset {
-  display: block;
-  border: none;
-  margin: 0;
-  padding: 0;
-  > div {
-    display: flex;
-    justify-content: space-between;  
-  }
-}
+// fieldset {
+//   display: block;
+//   border: none;
+//   margin: 0;
+//   padding: 0;
+//   > div {
+//     display: flex;
+//     justify-content: space-between;  
+//   }
+//   .button {
+//     opacity: 1;
+//     transition: opacity 0.2s;
+//   }
+//   &[disabled] {
+//     .button {
+//       opacity: 0;
+//     }
+//   }
+// }
 
 progress {
   width: 100%;
@@ -171,4 +202,22 @@ progress[value]::-webkit-progress-value::before {
   position: absolute;
   right: 0;
   top: -125%;
+}
+
+dl {
+  dt {
+    font-weight: 600;
+  }
+  dd + dt {
+    margin-top: 1rem;
+  }
+  &.questions-missed {
+    dt {
+      font-style: italic;
+      font-weight: normal;
+    }
+    dd {
+      margin-left: 0;
+    }
+  }
 }
